@@ -3,27 +3,27 @@
 if (count($argv)>1){
   switch ($argv[1]) {
     case '-help':
-      echo "To run the small test(1,000 lines) add argument: -sTest", PHP_EOL;
-      echo "To run the medium test(10,000 lines) add argument: -mTest", PHP_EOL;
-      echo "To run the big test(153,040 lines) add argument: -bTest", PHP_EOL;
-      echo "To run the error test(6 lines, missing field) add argument: -eTest", PHP_EOL;
+      echo "To run the small pString(1,000 lines) add argument: -sTest", PHP_EOL;
+      echo "To run the medium pString(10,000 lines) add argument: -mTest", PHP_EOL;
+      echo "To run the big pString(153,040 lines) add argument: -bTest", PHP_EOL;
+      echo "To run the error pString(6 lines, missing field) add argument: -eTest", PHP_EOL;
       echo "To run it on your own file add argument: -myTest and  the full name of the file", PHP_EOL;
       echo "For example: \"php parser.php -myTest example.csv\"";
       break;
     case '-sTest':
-      parseData("smallTest.csv");
+      mainFunc("smallTest.csv");
       break;
     case '-mTest':
-      parseData("mediumTest.csv");
+      mainFunc("mediumTest.csv");
       break;
     case '-bTest':
-      parseData("bigTest.csv");
+      mainFunc("bigTest.csv");
       break;
     case '-eTest':
-      parseData("errorTest.csv");
+      mainFunc("errorTest.csv");
       break;
     case '-myTest':
-      parseData($argv[2]);
+      mainFunc($argv[2]);
       break;
     default:
       echo "For help use argument -help";
@@ -32,44 +32,68 @@ if (count($argv)>1){
 }else
   echo "For help use argument -help";
 
+
+function mainFunc($fileName){
+  echo "Reading file $fileName",PHP_EOL;
+  $dataArray = readData($fileName);
+  echo "Parsing data",PHP_EOL;
+  $parsedString = parseData($dataArray);
+  echo "Writing parsed data to file",PHP_EOL;
+  writeData($parsedString);
+  echo "Done.",PHP_EOL;
+}
+
 #read the CSV file
-function parseData($fileName){
+function readData($fileName){
   if (($hData = fopen($fileName, "r")) !== FALSE) 
   {
     while (($data = fgetcsv($hData, 500, ",")) !== FALSE) 
     {
       #add the data to the array so we can parse it
-      $mainArray[] = $data;
+      $dataArray[] = $data;
     }
     fclose($hData);
-    //add some variables
-    $count = 1;
-    $lastRow = [];
-    $fieldsArray = $mainArray[0];
-    #loop through array to show the info
-    #the fact that the DB is nicely ordered is very important
-    #count can be reseted after every row if it's different from the last 
-    for ($j = 1; $j < sizeof($mainArray);$j++){
-      if ($mainArray[$j] == $lastRow){
-        $count++;
-        continue;
-      }else{
-        if($j != 1)
-          echo "quantity: ", $count, PHP_EOL;
-        echo "=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=",
-        PHP_EOL;
-        for($i = 0; $i < sizeof($fieldsArray); $i++){
-          if ($mainArray[$j][$i] == null)
-            throw new Exception("Required field not found!");
-          else 
-            echo $fieldsArray[$i], ":", $mainArray[$j][$i], PHP_EOL;
-        }
-        $count = 1;
-        $lastRow = $mainArray[$j];
-      }
-    }
-    echo "quantity: ", $count, PHP_EOL;
-    echo "=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=",
-        PHP_EOL;
+    parseData($dataArray);
   }
+  return $dataArray;
+}
+#parsing data & saving it into a string
+function parseData($dataArray){
+  $count = 1;
+  $lastRow = [];
+  $fieldsArray = $dataArray[0];
+  $pString="";
+  #loop through array to parse it
+  #the fact that the DB is nicely ordered is very important
+  #count can be reseted after every row if it's different from the last 
+  for ($j = 1; $j < sizeof($dataArray);$j++){
+    if ($dataArray[$j] == $lastRow){
+      $count++;
+      continue;
+    }else{
+      if($j != 1)
+      $pString = $pString."quantity:  $count\n";
+      $pString = $pString."=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=\n";
+      PHP_EOL;
+      for($i = 0; $i < sizeof($fieldsArray); $i++){
+        if ($dataArray[$j][$i] == null)
+          throw new Exception("Required field not found!");
+        else 
+          $pString = $pString."$fieldsArray[$i] : {$dataArray[$j][$i]}\n";
+      }
+      $count = 1;
+      $lastRow = $dataArray[$j];
+    }
+  }
+  $pString = $pString."quantity: $count\n";
+  $pString = $pString."=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=";
+
+  return $pString;
+}
+
+#write parsed data to the file
+function writeData($str){
+  $parsedFile = fopen("Parsed_File.txt", "w");
+  fwrite($parsedFile, $str);
+  fclose($parsedFile);
 }
