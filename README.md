@@ -16,3 +16,11 @@ colour_name:Multicolour<br>
 network_name:Not Applicable<br>
 quantity: 3<br>
 =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=<br>
+
+## How to...
+To run the small pString(1,000 lines) add argument: -sTest
+To run the medium pString(10,000 lines) add argument: -mTest
+To run the big pString(153,040 lines) add argument: -bTest
+To run the error pString(6 lines, missing field) add argument: -eTest
+To run it on your own file add argument: -myTest and  the full name of the file
+For example: "php parser.php -myTest example.csv"
